@@ -1,0 +1,20 @@
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+third_party/stockfish/
+app/src/main/jniLibs/
+
+# Reseau NNUE de Stockfish : 93 Mo, au-dela de la limite de GitHub.
+# Il est regenere par tools/fetch_stockfish.ps1, inutile de le versionner.
+app/src/main/assets/nnue/
+
+# Sessions du compilateur Kotlin, purement locales.
+.kotlin/

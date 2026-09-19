@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Silhouette de cavalier stylisee, centree dans la zone sure 72x72 -->
+    <path
+        android:fillColor="#FFE9B96B"
+        android:pathData="M44,26 C44,22 47,19 51,19 C53,19 54.5,20 55.5,21.5 L58,20 L57,24 C63,26 70,31 72,40 C73.5,47 72.5,54 70,60 L74,60 L74,66 L36,66 L36,60 L40,60 C40,56 41,53 43,50 C40,51 37,52 35,53 L33,48 C38,45 43,42 45,38 C42,39 39,40 37,41 L36,36 C40,33 43,30 44,26 Z" />
+    <path
+        android:fillColor="#FF1A1F27"
+        android:pathData="M49,27 m-2.2,0 a2.2,2.2 0 1,0 4.4,0 a2.2,2.2 0 1,0 -4.4,0 Z" />
+    <path
+        android:fillColor="#FF6FA8FF"
+        android:pathData="M34,70 L74,70 L74,78 L34,78 Z" />
+</vector>
