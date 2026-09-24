@@ -93,33 +93,50 @@ data class VizPalette(
     }
 }
 
-/** Themes de plateau proposes dans les reglages. */
+/**
+ * Themes de plateau.
+ *
+ * Les conventions visuelles reprennent celles des plateaux en ligne courants, dont
+ * chess.com : case jouee surlignee en jaune translucide, cases accessibles marquees
+ * d'un disque sombre translucide (et d'un anneau sur une prise), roi en echec cercle
+ * de rouge. Ce sont des codes d'usage, pas des elements graphiques proprietaires.
+ */
 data class BoardPalette(
     val key: String,
     val label: String,
     val light: Color,
     val dark: Color,
+    /** Case selectionnee et case du dernier coup : meme jaune, comme en ligne. */
     val highlight: Color,
     val lastMove: Color,
+    /** Disque/anneau indiquant une destination legale. */
+    val hint: Color,
     val check: Color,
 ) {
     companion object {
-        val Forest = BoardPalette(
-            "forest", "Foret",
-            light = Color(0xFFEEEED2), dark = Color(0xFF769656),
-            highlight = Color(0x8032D2FF), lastMove = Color(0x99F2C14E), check = Color(0xAAE53935),
+        private val HINT = Color(0x26000000)
+        private val YELLOW = Color(0x8CF7F769)
+        private val CHECK = Color(0x99E03131)
+
+        val Green = BoardPalette(
+            "forest", "Vert",
+            light = Color(0xFFEBECD0), dark = Color(0xFF739552),
+            highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
         )
-        val Slate = BoardPalette(
-            "slate", "Ardoise",
-            light = Color(0xFFD8E0EA), dark = Color(0xFF6E7F97),
-            highlight = Color(0x8032D2FF), lastMove = Color(0x99F2C14E), check = Color(0xAAE53935),
+        val Blue = BoardPalette(
+            "slate", "Bleu",
+            light = Color(0xFFDEE3E6), dark = Color(0xFF8CA2AD),
+            highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
         )
         val Walnut = BoardPalette(
-            "walnut", "Noyer",
-            light = Color(0xFFEBD2A8), dark = Color(0xFFA1683A),
-            highlight = Color(0x8032D2FF), lastMove = Color(0x99F2C14E), check = Color(0xAAE53935),
+            "walnut", "Bois",
+            light = Color(0xFFF0D9B5), dark = Color(0xFFB58863),
+            highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
         )
-        val all = listOf(Forest, Slate, Walnut)
-        fun byKey(key: String) = all.firstOrNull { it.key == key } ?: Forest
+        val all = listOf(Green, Blue, Walnut)
+
+        // Les cles historiques sont conservees pour ne pas perdre le choix deja
+        // enregistre dans les preferences.
+        fun byKey(key: String) = all.firstOrNull { it.key == key } ?: Green
     }
 }

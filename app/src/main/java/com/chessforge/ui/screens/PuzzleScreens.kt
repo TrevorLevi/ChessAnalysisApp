@@ -3,6 +3,7 @@ package com.chessforge.ui.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -15,14 +16,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -51,6 +56,7 @@ import com.chessforge.di.AppContainer
 import com.chessforge.engine.EngineLimits
 import com.chessforge.srs.Srs
 import com.chessforge.ui.Format
+import com.chessforge.ui.components.BoardBadge
 import com.chessforge.ui.components.ChessBoard
 import com.chessforge.ui.components.EmptyState
 import com.chessforge.ui.components.StatTile
@@ -265,6 +271,8 @@ class TrainerViewModel(
         val hints: Int = 0,
         val startedAt: Long = 0L,
         val wrongMove: String? = null,
+        /** Case d'arrivee du dernier coup joue : elle porte la pastille de verdict. */
+        val markedSquare: Int? = null,
         val alternativeAccepted: Boolean = false,
         val revealed: Boolean = false,
         val solvedCount: Int = 0,
@@ -304,6 +312,7 @@ class TrainerViewModel(
             hints = 0,
             startedAt = System.currentTimeMillis(),
             wrongMove = null,
+            markedSquare = null,
             alternativeAccepted = false,
             revealed = false,
         )
@@ -326,8 +335,14 @@ class TrainerViewModel(
             advance(move)
             return
         }
+
+        // Le coup joue reste visible sur le plateau, comme sur les puzzles en ligne :
+        // voir son erreur sur l'echiquier vaut mieux que de la lire dans un texte.
+        val afterUser = position.copy()
+        if (!afterUser.makeMove(move)) return
+        _state.value = state.copy(status = Status.CHECKING, position = afterUser, markedSquare = to)
+
         // Un autre coup peut etre aussi bon : on demande au moteur avant de sanctionner.
-        _state.value = state.copy(status = Status.CHECKING)
         viewModelScope.launch { checkAlternative(puzzle, position, move, uci) }
     }
 
@@ -356,7 +371,7 @@ class TrainerViewModel(
 
         if (userWin >= bestWin - ALTERNATIVE_TOLERANCE) {
             // Coup different mais equivalent : on valide et on cloture le puzzle.
-            _state.value = _state.value.copy(position = afterUser, alternativeAccepted = true)
+            _state.value = _state.value.copy(alternativeAccepted = true)
             finish(success = true, firstMoveUci = uci)
         } else {
             markWrong(uci)
@@ -375,10 +390,11 @@ class TrainerViewModel(
         val puzzle = state.puzzle ?: return
         val position = state.position.copy()
         if (!position.makeMove(move)) return
+        val landed = Move.to(move)
         var step = state.step + 1
 
         if (step >= puzzle.solutionUci.size || !position.hasLegalMove()) {
-            _state.value = state.copy(position = position, step = step)
+            _state.value = state.copy(position = position, step = step, markedSquare = landed)
             finish(success = true, firstMoveUci = puzzle.solutionUci.firstOrNull())
             return
         }
@@ -389,10 +405,17 @@ class TrainerViewModel(
         if (reply != Move.NONE && position.makeMove(reply)) step++
 
         if (step >= puzzle.solutionUci.size) {
-            _state.value = state.copy(position = position, step = step)
+            _state.value = state.copy(position = position, step = step, markedSquare = landed)
             finish(success = true, firstMoveUci = puzzle.solutionUci.firstOrNull())
         } else {
-            _state.value = state.copy(position = position, step = step, status = Status.SOLVING)
+            // Coup juste mais combinaison inachevee : on efface la pastille, la suite
+            // se joue encore.
+            _state.value = state.copy(
+                position = position,
+                step = step,
+                status = Status.SOLVING,
+                markedSquare = null,
+            )
         }
     }
 
@@ -437,6 +460,7 @@ class TrainerViewModel(
             step = 0,
             status = Status.SOLVING,
             wrongMove = null,
+            markedSquare = null,
             revealed = false,
             startedAt = System.currentTimeMillis(),
         )
@@ -479,15 +503,33 @@ fun PuzzleTrainerScreen(
     BoxWithConstraints(modifier.fillMaxSize()) {
         val twoPane = maxWidth >= 640.dp
 
+        val badges = state.markedSquare?.let { square ->
+            when (state.status) {
+                TrainerViewModel.Status.WRONG -> listOf(BoardBadge(square, BoardBadge.Kind.WRONG))
+                TrainerViewModel.Status.SOLVED -> listOf(BoardBadge(square, BoardBadge.Kind.CORRECT))
+                else -> null
+            }
+        } ?: emptyList()
+
         val board: @Composable () -> Unit = {
             ChessBoard(
                 position = state.position,
                 palette = BoardPalette.byKey(settings.boardTheme),
                 flipped = flipped,
-                showCoordinates = settings.showCoordinates,
                 interactive = solving,
                 onMove = viewModel::onMove,
+                badges = badges,
                 modifier = Modifier.fillMaxWidth(),
+                // Le bouton de reprise se pose sur le plateau : la main est deja la.
+                overlay = if (state.status != TrainerViewModel.Status.WRONG) null else {
+                    {
+                        RetryOverlay(
+                            onRetry = viewModel::retry,
+                            onSolution = viewModel::revealSolution,
+                            solutionShown = state.revealed,
+                        )
+                    }
+                },
             )
         }
 
@@ -517,7 +559,8 @@ fun PuzzleTrainerScreen(
                                 TrainerViewModel.Status.CHECKING ->
                                     "Verification de votre coup avec le moteur..."
                                 TrainerViewModel.Status.WRONG ->
-                                    "Ce n'est pas le meilleur coup. Regardez la solution, puis rejouez la position."
+                                    "Votre coup reste affiche : regardez ce qu'il laisse a l'adversaire, " +
+                                        "puis reprenez la combinaison."
                                 TrainerViewModel.Status.SOLVED ->
                                     if (state.alternativeAccepted) {
                                         "Trouve ! Votre coup differe de la variante principale mais vaut autant."
@@ -587,6 +630,44 @@ fun PuzzleTrainerScreen(
     }
 }
 
+/**
+ * Bandeau pose sur l'echiquier apres une erreur : relancer la combinaison depuis la
+ * position de depart, ou renoncer et voir la solution.
+ */
+@Composable
+private fun BoxScope.RetryOverlay(
+    onRetry: () -> Unit,
+    onSolution: () -> Unit,
+    solutionShown: Boolean,
+) {
+    Surface(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .padding(horizontal = 12.dp, vertical = 16.dp),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 6.dp,
+        shadowElevation = 8.dp,
+    ) {
+        Column(
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("Ce n'est pas le bon coup", style = MaterialTheme.typography.titleSmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onRetry) {
+                    Icon(Icons.Filled.Refresh, null, Modifier.size(18.dp))
+                    Text("  Reessayer")
+                }
+                if (!solutionShown) {
+                    TextButton(onClick = onSolution) { Text("Solution") }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ResultPanel(
@@ -595,6 +676,9 @@ private fun ResultPanel(
     viewModel: TrainerViewModel,
     onOpenGame: (String) -> Unit,
 ) {
+    // Tant que l'utilisateur n'a pas demande la solution apres une erreur, on ne la
+    // devoile pas : sinon le bouton "Reessayer" ne servirait a rien.
+    val hideSolution = state.status == TrainerViewModel.Status.WRONG && !state.revealed
     Surface(
         shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colorScheme.surface,
@@ -602,6 +686,21 @@ private fun ResultPanel(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (hideSolution) {
+                Text("Reprenez la combinaison", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "Le plateau est reste sur votre coup pour que vous voyiez l'erreur. " +
+                        "Appuyez sur Reessayer pour repartir de la position initiale.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = viewModel::retry) { Text("Reessayer") }
+                    OutlinedButton(onClick = viewModel::next) { Text("Puzzle suivant") }
+                }
+                return@Column
+            }
+
             Text("Solution", style = MaterialTheme.typography.titleSmall)
             Text(
                 puzzle.solutionSan.joinToString(" "),

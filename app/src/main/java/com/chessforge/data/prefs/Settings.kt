@@ -27,7 +27,6 @@ data class SettingsData(
     val maxPuzzlesPerGame: Int = 4,
     val dailyPuzzleGoal: Int = 10,
     val boardTheme: String = "forest",
-    val showCoordinates: Boolean = true,
     val showBestMoveArrow: Boolean = true,
     val enginePreference: EnginePreference = EnginePreference.AUTO,
     val themeMode: ThemeMode = ThemeMode.DARK,
@@ -58,7 +57,6 @@ class Settings(context: Context) {
         maxPuzzlesPerGame = prefs.getInt(KEY_MAX_PUZZLES, 4),
         dailyPuzzleGoal = prefs.getInt(KEY_DAILY_GOAL, 10),
         boardTheme = prefs.getString(KEY_BOARD_THEME, "forest") ?: "forest",
-        showCoordinates = prefs.getBoolean(KEY_COORDS, true),
         showBestMoveArrow = prefs.getBoolean(KEY_ARROW, true),
         enginePreference = runCatching {
             EnginePreference.valueOf(prefs.getString(KEY_ENGINE, EnginePreference.AUTO.name)!!)
@@ -82,7 +80,6 @@ class Settings(context: Context) {
             putInt(KEY_MAX_PUZZLES, updated.maxPuzzlesPerGame)
             putInt(KEY_DAILY_GOAL, updated.dailyPuzzleGoal)
             putString(KEY_BOARD_THEME, updated.boardTheme)
-            putBoolean(KEY_COORDS, updated.showCoordinates)
             putBoolean(KEY_ARROW, updated.showBestMoveArrow)
             putString(KEY_ENGINE, updated.enginePreference.name)
             putString(KEY_THEME, updated.themeMode.name)
@@ -102,7 +99,6 @@ class Settings(context: Context) {
         const val KEY_MAX_PUZZLES = "maxPuzzles"
         const val KEY_DAILY_GOAL = "dailyGoal"
         const val KEY_BOARD_THEME = "boardTheme"
-        const val KEY_COORDS = "showCoordinates"
         const val KEY_ARROW = "showArrow"
         const val KEY_ENGINE = "enginePreference"
         const val KEY_THEME = "themeMode"

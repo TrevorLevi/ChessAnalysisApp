@@ -282,7 +282,6 @@ fun GameReviewScreen(
                     modifier = Modifier.weight(1f),
                     palette = palette,
                     flipped = state.flipped,
-                    showCoordinates = settings.showCoordinates,
                     lastMove = if (state.sandbox == null) state.lastMove else null,
                     arrows = listOfNotNull(bestArrow),
                     interactive = state.sandbox != null,

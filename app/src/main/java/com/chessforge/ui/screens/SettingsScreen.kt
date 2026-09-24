@@ -227,9 +227,6 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
                     )
                 }
             }
-            SwitchRow("Afficher les coordonnees", settings.showCoordinates) {
-                viewModel.update { s -> s.copy(showCoordinates = it) }
-            }
             SwitchRow("Fleche du meilleur coup en revue", settings.showBestMoveArrow) {
                 viewModel.update { s -> s.copy(showBestMoveArrow = it) }
             }
