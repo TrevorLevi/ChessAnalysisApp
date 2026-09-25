@@ -176,10 +176,10 @@ elles ne sont volontairement pas versionnées dans le dépôt.
 
 ## Avant de téléverser — points bloquants
 
-1. **Type de compte.** Un compte personnel créé après le 13 novembre 2023 impose un
-   test fermé avec **12 testeurs inscrits en continu pendant 14 jours** avant de
-   pouvoir demander l'accès à la production. Les comptes « organisation » en sont
-   exemptés. À vérifier dans la console.
+1. **Test fermé obligatoire — confirme pour ce compte.** 12 testeurs inscrits en
+   continu pendant 14 jours avant de pouvoir demander l'acces a la production. La
+   marche a suivre, les pieges et le message d'invitation sont dans
+   `store/closed-testing.md`.
 2. **Politique de confidentialité en ligne.** Le champ est obligatoire et l'URL doit
    être accessible publiquement au moment de l'examen.
 3. **Marque tierce.** Le titre et l'icône ne doivent évoquer aucune marque de jeu en
