@@ -17,12 +17,12 @@ val hasStockfish = stockfishSrcDir.isDirectory &&
 
 android {
     namespace = "com.chessforge"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.chessforge"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         // arm64 uniquement : c'est l'architecture de tous les telephones vises, et cela

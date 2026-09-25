@@ -68,4 +68,9 @@ endif()
 
 find_library(LOG_LIB log)
 target_link_libraries(chessforge_sf ${LOG_LIB} atomic)
+
+# Pages memoire de 16 Ko : exigees par Google Play pour tout code natif depuis le
+# 1er novembre 2025, et indispensables sur les appareils 64 bits recents qui
+# n'utilisent plus des pages de 4 Ko. Le NDK r27 ne l'applique pas par defaut.
+target_link_options(chessforge_sf PRIVATE "-Wl,-z,max-page-size=16384")
 set_target_properties(chessforge_sf PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)

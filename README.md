@@ -36,7 +36,7 @@ un puzzle trouve du premier coup s'espace de jour en jour.
 
 ## Compiler et installer
 
-Prerequis : **JDK 17**, **SDK Android** (plateforme 35, build-tools 35), un cable USB.
+Prerequis : **JDK 17**, **SDK Android** (plateforme 36, build-tools 36), un cable USB.
 
 ```powershell
 # 1. Indiquer le SDK si besoin (local.properties est deja pre-rempli)
@@ -99,7 +99,10 @@ du Makefile officiel (`-O3 -fno-exceptions -march=armv8.2-a+dotprod`, `USE_NEON=
 `USE_NEON_DOTPROD`, `IS_64BIT`, `USE_POPCNT`) ; la bibliotheque cible `android-29`,
 plateforme minimale exigee par Stockfish, tandis que l'application reste installable
 depuis l'API 26 — sur un appareil trop ancien elle se rabat simplement sur le moteur
-integre. Stockfish recommande le **NDK r27c ou plus recent**.
+integre. Stockfish recommande le **NDK r27c ou plus recent**. L'edition de liens force un
+alignement sur des **pages de 16 Ko** (`-Wl,-z,max-page-size=16384`) : c'est exige par
+Google Play pour tout code natif, et necessaire sur les appareils 64 bits recents qui
+n'utilisent plus des pages de 4 Ko. Le NDK r27 ne l'applique pas par defaut.
 
 > **Licence** : Stockfish est sous GPL v3. Un APK qui l'embarque doit respecter cette
 > licence. Pour un usage personnel sur votre telephone, aucun probleme ; pour une
