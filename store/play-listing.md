@@ -160,10 +160,13 @@ pas une adresse `github.io`.
 
 | Élément | Format | État |
 |---|---|---|
-| Icône | PNG 512 × 512, 32 bits | **à produire** — l'icône de l'application est un vecteur, à exporter |
-| Image de présentation | PNG/JPEG 1024 × 500 | **à produire** |
+| Icône | PNG 512 × 512, 32 bits | **prête** — `store/icon-512.png` |
+| Image de présentation | PNG/JPEG 1024 × 500 | **prête** — `store/feature-1024x500.png` |
 | Captures téléphone | 2 minimum, 8 maximum | **disponibles** dans `store/screenshots/` |
 | Captures tablette 7" et 10" | facultatives | à faire depuis l'écran déplié |
+
+Icône et image de présentation sont regenerables par `python tools/make_store_assets.py` :
+elles reprennent le trace de cavalier des pieces de l'application.
 
 Les captures présentes dans `store/screenshots/` ont été prises sur un appareil réel
 et **contiennent des statistiques de jeu personnelles**. Relisez-les avant publication ;
