@@ -143,13 +143,16 @@ Classement attendu : **PEGI 3 / Tout public**.
 > exemption. Déclarer la transmission, comme proposé ci-dessus, est le choix prudent :
 > une sous-déclaration est un motif de suspension, une sur-déclaration n'en est pas un.
 
-**URL de politique de confidentialité** *(champ obligatoire)* : publiez `PRIVACY.md`
-sur GitHub Pages et indiquez l'adresse obtenue. Dans les réglages du dépôt, activez
-Pages sur la branche `main`, puis utilisez :
+**URL de politique de confidentialité** *(champ obligatoire)* — en ligne et verifiee :
 
 ```
-https://trevorlevi.github.io/ChessAnalysisApp/PRIVACY
+https://trevorlevi.github.io/ChessAnalysisApp/privacy.html
 ```
+
+Servie par GitHub Pages depuis le dossier `/docs` de la branche `main`. Attention a la
+casse : les chemins de GitHub Pages y sont sensibles. Ne renseignez **pas** le champ
+« Custom domain » des reglages Pages : il attend un nom de domaine vous appartenant,
+pas une adresse `github.io`.
 
 ---
 
