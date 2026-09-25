@@ -2,6 +2,10 @@
 
 *Dernière mise à jour : 25 septembre 2026*
 
+> Version publiee de ce document : <https://trevorlevi.github.io/ChessAnalysisApp/privacy.html>
+> Les deux fichiers doivent rester identiques ; en modifiant l'un, reportez la
+> modification dans `docs/privacy.html`.
+
 ChessForge est une application d'analyse de parties d'échecs qui fonctionne
 **entièrement sur votre appareil**. Cette politique décrit précisément les seules
 données manipulées et ce qu'il en advient.

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!--
+  Version publiee de la politique de confidentialite (GitHub Pages).
+  Elle doit rester identique a PRIVACY.md a la racine du depot : si vous modifiez
+  l'un, reportez la modification dans l'autre.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Politique de confidentialité — ChessForge</title>
+<meta name="description" content="Politique de confidentialité de ChessForge, application d'analyse de parties d'échecs fonctionnant entièrement sur l'appareil.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --surface: #f6f7f9;
+    --ink: #16181d;
+    --ink-soft: #52566040;
+    --muted: #5a606c;
+    --rule: #e2e5ea;
+    --accent: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12141a;
+      --surface: #191c23;
+      --ink: #e8ebf0;
+      --muted: #9aa2b1;
+      --rule: #2a2f39;
+      --accent: #7fb2ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2.5rem 1.25rem 4rem;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 44rem; margin: 0 auto; }
+  h1 { font-size: 1.85rem; line-height: 1.25; margin: 0 0 .35rem; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; }
+  .date { color: var(--muted); font-size: .9rem; margin: 0 0 2rem; }
+  .lede { font-size: 1.05rem; }
+  ul { padding-left: 1.2rem; }
+  li { margin: .4rem 0; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .95rem; }
+  th, td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid var(--rule); }
+  th { font-weight: 600; }
+  code { background: var(--surface); padding: .12em .4em; border-radius: 4px; font-size: .9em; }
+  a { color: var(--accent); }
+  .note {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: .9rem 1.1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+  }
+  footer {
+    margin-top: 3rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--rule);
+    color: var(--muted); font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Politique de confidentialité — ChessForge</h1>
+<p class="date">Dernière mise à jour : 25 septembre 2026</p>
+
+<p class="lede">ChessForge est une application d'analyse de parties d'échecs qui fonctionne
+<strong>entièrement sur votre appareil</strong>. Cette politique décrit précisément les
+seules données manipulées et ce qu'il en advient.</p>
+
+<h2>En résumé</h2>
+<ul>
+  <li>ChessForge <strong>ne crée aucun compte</strong> et ne demande <strong>aucun mot de passe</strong>.</li>
+  <li>ChessForge <strong>n'a aucun serveur</strong>. Le développeur ne reçoit, ne stocke et ne consulte <strong>aucune</strong> de vos données.</li>
+  <li>ChessForge ne contient <strong>ni publicité, ni outil de mesure d'audience, ni rapport de plantage</strong>.</li>
+  <li>Vos parties, analyses et exercices restent dans la mémoire privée de votre téléphone et disparaissent avec l'application.</li>
+</ul>
+
+<h2>La seule donnée qui quitte votre appareil</h2>
+<p>Pour télécharger vos parties, l'application doit les demander à chess.com. Elle envoie
+pour cela <strong>votre pseudonyme chess.com</strong> aux serveurs de chess.com, via
+l'interface de programmation publique <code>api.chess.com</code>, en connexion chiffrée
+(HTTPS).</p>
+<ul>
+  <li>Ce pseudonyme est celui que <strong>vous saisissez vous-même</strong> dans les réglages.</li>
+  <li>Il n'est transmis qu'à chess.com, <strong>jamais au développeur ni à un tiers</strong>.</li>
+  <li>Seules des données <strong>déjà publiques</strong> sont récupérées : vos parties terminées et votre classement, tels que n'importe qui peut les consulter sur votre profil chess.com.</li>
+  <li>Aucune donnée n'est envoyée à chess.com : l'application lit, elle n'écrit pas.</li>
+</ul>
+<p>L'usage que chess.com fait de ces requêtes relève de sa propre politique de confidentialité.</p>
+
+<h2>Ce qui est stocké sur votre appareil</h2>
+<p>Dans la zone de stockage privée de l'application, inaccessible aux autres applications :</p>
+<table>
+  <tr><th>Donnée</th><th>Usage</th></tr>
+  <tr><td>Vos parties (notation PGN)</td><td>Rejouer et analyser</td></tr>
+  <tr><td>Les analyses produites par le moteur</td><td>Statistiques et progression</td></tr>
+  <tr><td>Les exercices tirés de vos erreurs</td><td>Entraînement et révision</td></tr>
+  <tr><td>Vos réglages, dont votre pseudonyme</td><td>Fonctionnement de l'application</td></tr>
+</table>
+
+<h2>Permission demandée</h2>
+<p>L'application ne demande qu'<strong>une seule permission</strong> : l'accès à Internet,
+uniquement pour contacter <code>api.chess.com</code>. Aucun accès à vos contacts, à votre
+position, à vos fichiers, à l'appareil photo ni au microphone.</p>
+
+<h2>Supprimer vos données</h2>
+<ul>
+  <li><strong>Réglages → Effacer les données locales</strong> supprime immédiatement parties, analyses et exercices.</li>
+  <li>Désinstaller l'application supprime la totalité des données.</li>
+</ul>
+<div class="note">
+  Comme rien n'est transmis au développeur, aucune demande de suppression ne peut lui être
+  adressée : il n'a rien à supprimer.
+</div>
+
+<h2>Enfants</h2>
+<p>L'application ne s'adresse pas spécifiquement aux enfants et ne collecte sciemment aucune
+donnée les concernant.</p>
+
+<h2>Modifications</h2>
+<p>Toute modification de cette politique sera publiée sur cette page, avec une date de mise à jour.</p>
+
+<h2>Contact</h2>
+<p>Questions ou remarques : ouvrez un ticket sur
+<a href="https://github.com/TrevorLevi/ChessAnalysisApp/issues">le dépôt du projet</a>.</p>
+
+<footer>
+  <p>ChessForge est un logiciel libre sous licence GNU GPL v3. Son
+  <a href="https://github.com/TrevorLevi/ChessAnalysisApp">code source complet</a> est
+  consultable, ce qui permet à quiconque de vérifier les affirmations ci-dessus.</p>
+  <p>ChessForge n'est ni affilié, ni associé, ni approuvé par Chess.com, LLC.</p>
+</footer>
+
+</main>
+</body>
+</html>

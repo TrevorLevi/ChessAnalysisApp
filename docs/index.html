@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChessForge — analyse locale de parties d'échecs</title>
+<meta name="description" content="Application Android qui analyse vos parties d'échecs sur votre téléphone et en tire des exercices personnels.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff; --surface: #f6f7f9; --ink: #16181d;
+    --muted: #5a606c; --rule: #e2e5ea; --accent: #2a78d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12141a; --surface: #191c23; --ink: #e8ebf0;
+      --muted: #9aa2b1; --rule: #2a2f39; --accent: #7fb2ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 3.5rem 1.25rem 4rem;
+    background: var(--bg); color: var(--ink);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 40rem; margin: 0 auto; }
+  h1 { font-size: 2rem; margin: 0 0 .5rem; }
+  .tagline { color: var(--muted); font-size: 1.05rem; margin: 0 0 2rem; }
+  ul { padding-left: 1.2rem; }
+  li { margin: .45rem 0; }
+  a { color: var(--accent); }
+  .links { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+</style>
+</head>
+<body>
+<main>
+  <h1>ChessForge</h1>
+  <p class="tagline">Analyse vos parties d'échecs directement sur votre téléphone et
+  transforme vos erreurs en exercices personnels.</p>
+
+  <ul>
+    <li>Import de vos parties publiques depuis votre compte de jeu en ligne.</li>
+    <li>Analyse complète sur l'appareil, sans serveur : précision, centipions perdus,
+        classification de chaque coup.</li>
+    <li>Exercices tirés de vos propres erreurs, avec révision espacée.</li>
+    <li>Tableau de bord classant vos faiblesses par ce qu'elles vous coûtent réellement.</li>
+    <li>Moteur Stockfish embarqué.</li>
+  </ul>
+
+  <div class="links">
+    <p><a href="privacy.html">Politique de confidentialité</a></p>
+    <p><a href="https://github.com/TrevorLevi/ChessAnalysisApp">Code source (GNU GPL v3)</a></p>
+  </div>
+</main>
+</body>
+</html>
