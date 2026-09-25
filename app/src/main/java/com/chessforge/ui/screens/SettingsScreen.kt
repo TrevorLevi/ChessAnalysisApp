@@ -257,8 +257,43 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
             OutlinedButton(onClick = { confirmReset = true }) { Text("Effacer les donnees locales") }
         }
 
+        // La GPL v3 (article 5d) impose qu'un programme interactif affiche ses mentions
+        // legales : un fichier LICENSE dans le depot ne suffit pas.
+        SettingsGroup("Licence") {
+            Text(
+                "ChessForge — Copyright (C) 2026 Trevor Levi",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                "Ce programme est un logiciel libre : vous pouvez le redistribuer et le " +
+                    "modifier selon les termes de la GNU General Public License version 3, " +
+                    "ou toute version ulterieure, publiee par la Free Software Foundation.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "Il est distribue dans l'espoir qu'il sera utile, mais SANS AUCUNE GARANTIE, " +
+                    "sans meme la garantie implicite de QUALITE MARCHANDE ou d'ADEQUATION A " +
+                    "UN USAGE PARTICULIER. Voir la GNU General Public License pour plus de details.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                "Code source complet : github.com/TrevorLevi/ChessAnalysisApp",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                "Cette application inclut Stockfish, moteur d'echecs distribue sous GNU GPL v3 " +
+                    "par ses auteurs (stockfishchess.org). Le texte integral de la licence est " +
+                    "fourni dans le fichier LICENSE du code source.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+
         Text(
-            "ChessForge ${BuildConfig.VERSION_NAME} · analyse locale de parties chess.com",
+            "ChessForge ${BuildConfig.VERSION_NAME} · analyse locale de parties chess.com · GPL v3",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

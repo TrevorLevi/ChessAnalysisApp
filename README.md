@@ -152,6 +152,25 @@ sur le moteur (mat en un, mat en deux, gain de materiel, piece en prise).
 
 ---
 
+## Licence
+
+ChessForge est distribue sous **GNU General Public License v3** (voir le fichier
+`LICENSE`). Cette licence n'est pas un choix esthetique : l'application embarque
+Stockfish, lui-meme sous GPL v3, et la GPL impose que l'oeuvre combinee le soit aussi.
+
+Concretement, pour toute redistribution — y compris une publication sur un magasin
+d'applications :
+
+- le code source complet doit rester accessible, ce qu'assure ce depot ;
+- les mentions legales doivent etre affichees dans l'application, ce que fait l'ecran
+  Reglages (article 5d de la licence) ;
+- toute version modifiee que vous distribuez doit l'etre sous la meme licence.
+
+Stockfish est l'oeuvre de ses auteurs (stockfishchess.org) ; il n'est pas inclus dans
+ce depot mais recupere par `tools/fetch_stockfish.ps1`.
+
+---
+
 ## Limites connues
 
 - La detection des motifs tactiques est heuristique : elle rate des motifs plutot que
