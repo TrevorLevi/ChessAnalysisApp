@@ -53,6 +53,22 @@ Prerequis : **JDK 17**, **SDK Android** (plateforme 36, build-tools 36), un cabl
 L'APK *release* est signe avec la cle de debug Android : suffisant pour une installation
 personnelle par sideload, a ne jamais publier tel quel.
 
+### Produire le bundle pour Google Play
+
+```powershell
+.\gradlew.bat :app:bundleRelease -PplayRelease
+# -> appuild\outputsundleeleasepp-release.aab
+```
+
+Le drapeau `-PplayRelease` est ce qui declenche la signature avec la vraie cle de
+televersement, decrite dans `keystore.properties` (hors depot). Sans lui, tous les
+builds restent signes avec la cle de debug — et c'est voulu : **changer de cle de
+signature rend l'application non actualisable** sur un appareil ou elle est deja
+installee, Android refusant la mise a jour. Il faudrait desinstaller, donc perdre
+parties et puzzles.
+
+Les textes de la fiche Play et la marche a suivre sont dans `store/play-listing.md`.
+
 ### Premier lancement
 
 1. **Reglages** → saisir votre pseudo chess.com → *Verifier et enregistrer*.

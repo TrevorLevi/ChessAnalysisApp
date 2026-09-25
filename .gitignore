@@ -18,3 +18,12 @@ app/src/main/assets/nnue/
 
 # Sessions du compilateur Kotlin, purement locales.
 .kotlin/
+
+# Secrets de signature : ne doivent jamais etre versionnes.
+keystore.properties
+*.jks
+*.keystore
+
+# Captures d ecran : prises sur un appareil reel, elles contiennent des
+# statistiques de jeu personnelles. A relire avant toute publication.
+store/screenshots/

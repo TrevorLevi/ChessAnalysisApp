@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -14,6 +15,31 @@ plugins {
 val stockfishSrcDir = rootProject.file("third_party/stockfish/src")
 val hasStockfish = stockfishSrcDir.isDirectory &&
     stockfishSrcDir.listFiles { f -> f.name == "uci.cpp" }?.isNotEmpty() == true
+
+/**
+ * Cle de televersement Play. Les secrets vivent dans `keystore.properties`, hors du
+ * depot (voir .gitignore) et pointant vers un keystore range ailleurs encore : rien
+ * de sensible ne peut partir sur GitHub. Absent, on retombe sur la cle de debug pour
+ * que le projet reste compilable par quiconque le clone.
+ */
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val uploadKeystore = keystoreProperties.getProperty("storeFile")?.let(::File)
+
+/**
+ * La cle de televersement n'est utilisee que sur demande explicite :
+ *
+ *     gradlew bundleRelease -PplayRelease
+ *
+ * Changer de cle de signature rend l'application non actualisable sur un appareil ou
+ * elle est deja installee : Android refuse la mise a jour et il faudrait desinstaller,
+ * donc effacer les parties et les puzzles. Les builds ordinaires restent donc signes
+ * avec la cle de debug, et seul le bundle destine a Google Play porte la vraie cle.
+ */
+val signForPlay = providers.gradleProperty("playRelease").isPresent
+val hasUploadKey = uploadKeystore?.exists() == true && signForPlay
 
 android {
     namespace = "com.chessforge"
@@ -55,8 +81,16 @@ android {
     }
 
     signingConfigs {
-        // L'APK "release" est signe avec la cle de debug : suffisant pour un usage perso
-        // en sideload, jamais pour une publication sur le Play Store.
+        if (hasUploadKey) {
+            create("upload") {
+                storeFile = uploadKeystore
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+        // Repli : cle de debug, suffisante pour installer soi-meme par sideload,
+        // jamais acceptee par le Play Store.
         create("sideload") {
             storeFile = File(System.getProperty("user.home"), ".android/debug.keystore")
             storePassword = "android"
@@ -74,7 +108,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("sideload")
+            signingConfig = signingConfigs.getByName(if (hasUploadKey) "upload" else "sideload")
         }
     }
 
@@ -116,12 +150,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
     implementation("androidx.navigation:navigation-compose:2.9.0")
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
-    implementation("androidx.window:window:1.3.0")
 
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
 
