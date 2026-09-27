@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,15 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.chessforge.data.model.Motif
 import com.chessforge.ui.screens.DashboardScreen
+import com.chessforge.ui.screens.EndgameDrillScreen
+import com.chessforge.ui.screens.EndgameDrillViewModel
+import com.chessforge.ui.screens.EndgameListScreen
+import com.chessforge.ui.screens.RepertoireDrillScreen
+import com.chessforge.ui.screens.RepertoireDrillViewModel
+import com.chessforge.ui.screens.RepertoireListScreen
+import com.chessforge.ui.screens.TacticDrillScreen
+import com.chessforge.ui.screens.TacticDrillViewModel
+import com.chessforge.ui.screens.TrainHubScreen
 import com.chessforge.ui.screens.DashboardViewModel
 import com.chessforge.ui.screens.GameReviewScreen
 import com.chessforge.ui.screens.GamesScreen
@@ -55,7 +65,7 @@ import java.net.URLEncoder
 private enum class Tab(val route: String, val label: String, val icon: ImageVector) {
     DASHBOARD("dashboard", "Tableau", Icons.Filled.Insights),
     GAMES("games", "Parties", Icons.Filled.SportsEsports),
-    PUZZLES("puzzles", "Puzzles", Icons.Filled.Extension),
+    TRAIN("train", "Entrainer", Icons.Filled.Extension),
     OPENINGS("openings", "Ouvertures", Icons.Filled.MenuBook),
     SETTINGS("settings", "Reglages", Icons.Filled.Settings),
 }
@@ -70,7 +80,10 @@ fun ForgeApp() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
     val currentTab = Tab.entries.firstOrNull { route?.startsWith(it.route) == true }
-    val isDetail = route?.startsWith("game/") == true || route?.startsWith("trainer") == true
+    val isDetail = route != null && (
+        route.startsWith("game/") || route.startsWith("trainer") ||
+            route.startsWith("puzzles") || route.startsWith("train/")
+        )
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
         // Ecran deplie du telephone : la navigation passe sur le cote, plus de place pour le contenu.
@@ -165,7 +178,19 @@ private fun ForgeNavHost(navController: NavHostController) {
             GameReviewScreen(viewModel = viewModel)
         }
 
-        composable(Tab.PUZZLES.route) {
+        composable(Tab.TRAIN.route) {
+            val viewModel = forgeViewModel { PuzzleListViewModel(it) }
+            val hub by viewModel.state.collectAsStateWithLifecycle()
+            TrainHubScreen(
+                onOpenPuzzles = { navController.navigate("puzzles") },
+                onOpenEndgames = { navController.navigate("train/endgames") },
+                onOpenTactics = { navController.navigate("train/tactics") },
+                onOpenRepertoire = { navController.navigate("train/openings") },
+                duePuzzles = hub.progress?.due ?: 0,
+            )
+        }
+
+        composable("puzzles") {
             val viewModel = forgeViewModel { PuzzleListViewModel(it) }
             PuzzleListScreen(
                 viewModel = viewModel,
@@ -173,6 +198,31 @@ private fun ForgeNavHost(navController: NavHostController) {
                     navController.navigate("trainer?motif=${motif?.name ?: ""}&due=$dueOnly")
                 },
             )
+        }
+
+        composable("train/endgames") {
+            EndgameListScreen(onOpen = { id -> navController.navigate("train/endgame/$id") })
+        }
+
+        composable("train/endgame/{id}") { entry ->
+            val id = entry.arguments?.getString("id") ?: ""
+            val viewModel = forgeViewModel(key = "endgame-$id") { EndgameDrillViewModel(it, id) }
+            EndgameDrillScreen(viewModel = viewModel)
+        }
+
+        composable("train/tactics") {
+            val viewModel = forgeViewModel { TacticDrillViewModel(it) }
+            TacticDrillScreen(viewModel = viewModel, onDone = { navController.popBackStack() })
+        }
+
+        composable("train/openings") {
+            RepertoireListScreen(onOpen = { id -> navController.navigate("train/opening/$id") })
+        }
+
+        composable("train/opening/{id}") { entry ->
+            val id = entry.arguments?.getString("id") ?: ""
+            val viewModel = forgeViewModel(key = "opening-$id") { RepertoireDrillViewModel(it, id) }
+            RepertoireDrillScreen(viewModel = viewModel)
         }
 
         composable("trainer?motif={motif}&due={due}") { entry ->
@@ -218,6 +268,10 @@ private fun titleFor(route: String?): String = when {
     route.startsWith("dashboard") -> "Tableau de bord"
     route.startsWith("games") -> "Mes parties"
     route.startsWith("game/") -> "Revue de partie"
+    route.startsWith("train/endgame") -> "Finale"
+    route.startsWith("train/tactics") -> "Tactique"
+    route.startsWith("train/opening") -> "Repertoire"
+    route.startsWith("train") -> "Entrainement"
     route.startsWith("puzzles") -> "Mes puzzles"
     route.startsWith("trainer") -> "Entrainement"
     route.startsWith("openings") -> "Ouvertures"

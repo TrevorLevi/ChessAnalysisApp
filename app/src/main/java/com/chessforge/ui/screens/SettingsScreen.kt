@@ -2,6 +2,8 @@ package com.chessforge.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +44,7 @@ import com.chessforge.data.prefs.ThemeMode
 import com.chessforge.di.AppContainer
 import com.chessforge.ui.Format
 import com.chessforge.ui.theme.BoardPalette
+import com.chessforge.ui.theme.PieceStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,6 +84,7 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -218,7 +222,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
 
         SettingsGroup("Affichage") {
             Text("Plateau", style = MaterialTheme.typography.bodyMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (palette in BoardPalette.all) {
                     FilterChip(
                         selected = settings.boardTheme == palette.key,
@@ -227,6 +231,25 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
                     )
                 }
             }
+
+            Spacer(Modifier.height(4.dp))
+            Text("Pieces", style = MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (style in PieceStyle.entries) {
+                    FilterChip(
+                        selected = settings.pieceStyle == style.key,
+                        onClick = { viewModel.update { s -> s.copy(pieceStyle = style.key) } },
+                        label = { Text(style.label) },
+                    )
+                }
+            }
+            Text(
+                "Les pieces sont dessinees au standard Staunton. Les jeux graphiques des " +
+                    "sites de jeu en ligne sont des oeuvres protegees : ils ne peuvent pas " +
+                    "etre repris ici.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             SwitchRow("Fleche du meilleur coup en revue", settings.showBestMoveArrow) {
                 viewModel.update { s -> s.copy(showBestMoveArrow = it) }
             }

@@ -123,20 +123,51 @@ data class BoardPalette(
             light = Color(0xFFEBECD0), dark = Color(0xFF739552),
             highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
         )
+        val Walnut = BoardPalette(
+            "walnut", "Noyer",
+            light = Color(0xFFE4C99B), dark = Color(0xFF945E37),
+            highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
+        )
+        val Oak = BoardPalette(
+            "oak", "Chene",
+            light = Color(0xFFF0D9B5), dark = Color(0xFFB58863),
+            highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
+        )
         val Blue = BoardPalette(
             "slate", "Bleu",
             light = Color(0xFFDEE3E6), dark = Color(0xFF8CA2AD),
             highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
         )
-        val Walnut = BoardPalette(
-            "walnut", "Bois",
-            light = Color(0xFFF0D9B5), dark = Color(0xFFB58863),
+        val Marble = BoardPalette(
+            "marble", "Marbre",
+            light = Color(0xFFE8E8E4), dark = Color(0xFF9A9A94),
             highlight = YELLOW, lastMove = YELLOW, hint = HINT, check = CHECK,
         )
-        val all = listOf(Green, Blue, Walnut)
+        val Night = BoardPalette(
+            "night", "Nuit",
+            light = Color(0xFF5B6376), dark = Color(0xFF333A49),
+            highlight = Color(0x8C7FB2FF), lastMove = Color(0x8C7FB2FF),
+            hint = Color(0x33FFFFFF), check = CHECK,
+        )
+        val all = listOf(Green, Walnut, Oak, Blue, Marble, Night)
 
         // Les cles historiques sont conservees pour ne pas perdre le choix deja
         // enregistre dans les preferences.
         fun byKey(key: String) = all.firstOrNull { it.key == key } ?: Green
+    }
+}
+
+/**
+ * Style de dessin des pieces. Les silhouettes restent les memes, seul le rendu change :
+ * il n'est pas possible de reprendre le jeu graphique d'un site tiers, qui est une
+ * oeuvre protegee.
+ */
+enum class PieceStyle(val key: String, val label: String) {
+    CLASSIC("classic", "Classique"),
+    CONTRAST("contrast", "Contraste"),
+    ;
+
+    companion object {
+        fun byKey(key: String) = entries.firstOrNull { it.key == key } ?: CLASSIC
     }
 }

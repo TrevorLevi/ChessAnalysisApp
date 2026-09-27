@@ -18,7 +18,10 @@ object Fen {
                 }
                 c.isDigit() -> file += c - '0'
                 else -> {
-                    if (rank in 0..7 && file in 0..7) board[Square.of(file, rank)] = Piece.fromChar(c)
+                    // Une rangee decrivant plus de huit cases ecraserait la suivante en
+                    // silence : mieux vaut echouer franchement.
+                    require(file in 0..7 && rank in 0..7) { "FEN invalide, rangee trop longue : $fen" }
+                    board[Square.of(file, rank)] = Piece.fromChar(c)
                     file++
                 }
             }

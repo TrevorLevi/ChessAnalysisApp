@@ -292,6 +292,7 @@ class ForgeRepository(
     fun games(filter: GameFilter = GameFilter()): List<GameRecord> = gameDao.list(filter)
     fun game(id: String): GameRecord? = gameDao.get(id)
     fun moves(gameId: String): List<MoveRecord> = gameDao.moves(gameId)
+    fun moveAt(gameId: String, ply: Int): MoveRecord? = gameDao.move(gameId, ply)
     fun openingFamilies(): List<String> = statsDao.openingRows(minGames = 1, limit = 60).map { it.family }
     fun openings(minGames: Int = 1): List<OpeningRow> = statsDao.openingRows(minGames, limit = 40)
     fun colorSplit(): Pair<OpeningRow, OpeningRow> = statsDao.colorSplit()

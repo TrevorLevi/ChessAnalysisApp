@@ -43,9 +43,17 @@ import com.chessforge.chess.Piece
 import com.chessforge.chess.Position
 import com.chessforge.chess.Square
 import com.chessforge.ui.theme.BoardPalette
+import com.chessforge.ui.theme.PieceStyle
 
 /** Fleche tracee sur le plateau (coup recommande, menace, idee). */
 data class BoardArrow(val from: Int, val to: Int, val color: Color, val label: String? = null)
+
+/**
+ * Coup en cours d'animation. [position] doit alors decrire l'echiquier *avant* ce coup :
+ * la piece est dessinee entre sa case de depart et sa case d'arrivee selon [progress],
+ * de 0 a 1. A l'arrivee, l'appelant bascule sur la position suivante.
+ */
+data class BoardAnimation(val move: Int, val progress: Float)
 
 /** Pastille de verdict posee sur une case, comme apres un coup de puzzle. */
 data class BoardBadge(val square: Int, val kind: Kind) {
@@ -74,8 +82,10 @@ fun ChessBoard(
     position: Position,
     modifier: Modifier = Modifier,
     palette: BoardPalette = BoardPalette.Green,
+    pieceStyle: PieceStyle = PieceStyle.CLASSIC,
     flipped: Boolean = false,
     lastMove: Int? = null,
+    animation: BoardAnimation? = null,
     arrows: List<BoardArrow> = emptyList(),
     badges: List<BoardBadge> = emptyList(),
     interactive: Boolean = false,
@@ -264,11 +274,29 @@ fun ChessBoard(
             }
 
             // --- Pieces ------------------------------------------------------
+            val animatedFrom = animation?.let { Move.from(it.move) }
             for (square in 0..63) {
                 val piece = position.board[square]
                 if (piece == Piece.NONE) continue
                 if (square == dragFrom.value && dragPoint.value != null) continue
-                drawPiece(piece, cellTopLeft(square), cell)
+                if (square == animatedFrom) continue
+                drawPiece(piece, cellTopLeft(square), cell, pieceStyle)
+            }
+
+            // Piece en cours d'animation, glissee entre ses deux cases.
+            animation?.let { anim ->
+                val piece = position.board[Move.from(anim.move)]
+                if (piece != Piece.NONE) {
+                    val start = cellTopLeft(Move.from(anim.move))
+                    val end = cellTopLeft(Move.to(anim.move))
+                    val t = anim.progress.coerceIn(0f, 1f)
+                    drawPiece(
+                        piece,
+                        Offset(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t),
+                        cell,
+                        pieceStyle,
+                    )
+                }
             }
 
             // --- Fleches et pastilles, au-dessus des pieces -------------------
@@ -290,7 +318,7 @@ fun ChessBoard(
                 val piece = position.board[from]
                 if (piece != Piece.NONE) {
                     val scaled = cell * 1.15f
-                    drawPiece(piece, Offset(point.x - scaled / 2f, point.y - scaled / 2f), scaled)
+                    drawPiece(piece, Offset(point.x - scaled / 2f, point.y - scaled / 2f), scaled, pieceStyle)
                 }
             }
         }
@@ -435,12 +463,28 @@ private fun DrawScope.drawBadge(kind: BoardBadge.Kind, topLeft: Offset, cell: Fl
  * Chaque piece est decrite dans un carre normalise (0..1) puis mise a l'echelle de la
  * case, au profil Staunton : socle etage, collerette, et tete caracteristique.
  */
-private fun DrawScope.drawPiece(piece: Int, topLeft: Offset, cell: Float) {
+private fun DrawScope.drawPiece(
+    piece: Int,
+    topLeft: Offset,
+    cell: Float,
+    style: PieceStyle = PieceStyle.CLASSIC,
+) {
     val white = Piece.colorOf(piece) == Piece.WHITE
-    val fill = if (white) WHITE_FILL else BLACK_FILL
-    val edge = if (white) WHITE_EDGE else BLACK_EDGE
+    val contrast = style == PieceStyle.CONTRAST
+    val fill = when {
+        contrast && white -> Color.White
+        contrast -> Color(0xFF111111)
+        white -> WHITE_FILL
+        else -> BLACK_FILL
+    }
+    val edge = when {
+        contrast && white -> Color(0xFF111111)
+        contrast -> Color.White
+        white -> WHITE_EDGE
+        else -> BLACK_EDGE
+    }
     val s = cell
-    val stroke = Stroke(width = s * 0.028f)
+    val stroke = Stroke(width = s * (if (contrast) 0.042f else 0.028f))
 
     translate(topLeft.x, topLeft.y) {
 

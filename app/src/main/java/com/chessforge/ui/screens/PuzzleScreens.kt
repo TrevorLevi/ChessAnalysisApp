@@ -1,5 +1,8 @@
 package com.chessforge.ui.screens
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -34,7 +37,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -56,11 +61,13 @@ import com.chessforge.di.AppContainer
 import com.chessforge.engine.EngineLimits
 import com.chessforge.srs.Srs
 import com.chessforge.ui.Format
+import com.chessforge.ui.components.BoardAnimation
 import com.chessforge.ui.components.BoardBadge
 import com.chessforge.ui.components.ChessBoard
 import com.chessforge.ui.components.EmptyState
 import com.chessforge.ui.components.StatTile
 import com.chessforge.ui.theme.BoardPalette
+import com.chessforge.ui.theme.PieceStyle
 import com.chessforge.ui.theme.LocalViz
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -260,7 +267,13 @@ class TrainerViewModel(
     private val dueOnly: Boolean,
 ) : ViewModel() {
 
-    enum class Status { LOADING, SOLVING, CHECKING, WRONG, SOLVED, FINISHED }
+    enum class Status { LOADING, INTRO, SOLVING, CHECKING, WRONG, SOLVED, FINISHED }
+
+    /**
+     * Le coup adverse qui amene la position. Le rejouer avant de rendre la main montre
+     * le coup critique : c'est lui qui explique pourquoi la position merite un exercice.
+     */
+    data class Intro(val fenBefore: String, val move: Int, val san: String)
 
     data class State(
         val queue: List<Puzzle> = emptyList(),
@@ -273,6 +286,9 @@ class TrainerViewModel(
         val wrongMove: String? = null,
         /** Case d'arrivee du dernier coup joue : elle porte la pastille de verdict. */
         val markedSquare: Int? = null,
+        val intro: Intro? = null,
+        /** Coup adverse qui amene la position : reste surligne pendant la resolution. */
+        val lastOpponentMove: Int? = null,
         val alternativeAccepted: Boolean = false,
         val revealed: Boolean = false,
         val solvedCount: Int = 0,
@@ -308,14 +324,62 @@ class TrainerViewModel(
             index = index,
             position = Fen.parse(puzzle.fen),
             step = 0,
-            status = Status.SOLVING,
+            status = Status.LOADING,
             hints = 0,
             startedAt = System.currentTimeMillis(),
             wrongMove = null,
             markedSquare = null,
             alternativeAccepted = false,
             revealed = false,
+            intro = null,
+            lastOpponentMove = null,
         )
+
+        viewModelScope.launch {
+            val intro = loadIntro(puzzle)
+            // Le chronometre ne demarre qu'apres l'animation : le temps de regarder le
+            // coup adverse ne doit pas compter dans la resolution.
+            _state.value = _state.value.copy(
+                intro = intro,
+                lastOpponentMove = intro?.move,
+                status = if (intro == null) Status.SOLVING else Status.INTRO,
+                startedAt = System.currentTimeMillis(),
+            )
+        }
+    }
+
+    /** Retrouve le coup adverse joue juste avant la position, s'il est en base. */
+    private suspend fun loadIntro(puzzle: Puzzle): Intro? {
+        val gameId = puzzle.gameId ?: return null
+        if (puzzle.ply <= 0) return null
+        val previous = withContext(Dispatchers.IO) {
+            container.repository.moveAt(gameId, puzzle.ply - 1)
+        } ?: return null
+        val before = runCatching { Fen.parse(previous.fenBefore) }.getOrNull() ?: return null
+        val move = San.fromUci(before, previous.uci)
+        if (move == Move.NONE) return null
+        return Intro(previous.fenBefore, move, previous.san)
+    }
+
+    /** Appele par l'interface quand l'animation du coup adverse est terminee. */
+    fun introFinished() {
+        val state = _state.value
+        if (state.status != Status.INTRO) return
+        _state.value = state.copy(
+            intro = null,
+            status = Status.SOLVING,
+            startedAt = System.currentTimeMillis(),
+        )
+    }
+
+    /** Rejoue l'animation du coup adverse a la demande. */
+    fun replayIntro() {
+        val puzzle = _state.value.puzzle ?: return
+        if (_state.value.status != Status.SOLVING) return
+        viewModelScope.launch {
+            val intro = loadIntro(puzzle) ?: return@launch
+            _state.value = _state.value.copy(intro = intro, status = Status.INTRO)
+        }
     }
 
     fun next() = startPuzzle(_state.value.index + 1)
@@ -462,6 +526,7 @@ class TrainerViewModel(
             wrongMove = null,
             markedSquare = null,
             revealed = false,
+            intro = null,
             startedAt = System.currentTimeMillis(),
         )
     }
@@ -511,14 +576,33 @@ fun PuzzleTrainerScreen(
             }
         } ?: emptyList()
 
+        // Animation du coup adverse : le plateau affiche la position d'avant, la piece
+        // glisse jusqu'a sa case, puis la main revient au joueur.
+        val intro = state.intro
+        val introProgress = remember(intro) { Animatable(0f) }
+        LaunchedEffect(intro) {
+            if (intro == null) return@LaunchedEffect
+            introProgress.snapTo(0f)
+            introProgress.animateTo(1f, tween(durationMillis = 620, easing = FastOutSlowInEasing))
+            delay(420)
+            viewModel.introFinished()
+        }
+
+        val shownPosition = remember(intro, state.position) {
+            if (intro != null) Fen.parse(intro.fenBefore) else state.position
+        }
+
         val board: @Composable () -> Unit = {
             ChessBoard(
-                position = state.position,
+                position = shownPosition,
                 palette = BoardPalette.byKey(settings.boardTheme),
+                pieceStyle = PieceStyle.byKey(settings.pieceStyle),
                 flipped = flipped,
                 interactive = solving,
                 onMove = viewModel::onMove,
                 badges = badges,
+                lastMove = if (intro == null) state.lastOpponentMove else null,
+                animation = intro?.let { BoardAnimation(it.move, introProgress.value) },
                 modifier = Modifier.fillMaxWidth(),
                 // Le bouton de reprise se pose sur le plateau : la main est deja la.
                 overlay = if (state.status != TrainerViewModel.Status.WRONG) null else {
@@ -556,6 +640,9 @@ fun PuzzleTrainerScreen(
                         Text(puzzle.kind.label, style = MaterialTheme.typography.titleMedium)
                         Text(
                             when (state.status) {
+                                TrainerViewModel.Status.INTRO ->
+                                    "Votre adversaire vient de jouer ${intro?.san ?: ""}. " +
+                                        "C'est le coup qui amene la position."
                                 TrainerViewModel.Status.CHECKING ->
                                     "Verification de votre coup avec le moteur..."
                                 TrainerViewModel.Status.WRONG ->
@@ -589,13 +676,22 @@ fun PuzzleTrainerScreen(
                     }
                 }
 
-                if (solving) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = viewModel::useHint) { Text("Indice") }
-                        TextButton(onClick = viewModel::revealSolution) { Text("Voir la solution") }
-                    }
-                } else {
-                    ResultPanel(state, puzzle, viewModel, onOpenGame)
+                // Pendant l'animation et la verification, on n'affiche ni les actions ni
+                // la solution : la devoiler avant que le joueur ait cherche viderait
+                // l'exercice de son interet.
+                when (state.status) {
+                    TrainerViewModel.Status.SOLVING ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = viewModel::useHint) { Text("Indice") }
+                            if (puzzle.gameId != null && puzzle.ply > 0) {
+                                TextButton(onClick = viewModel::replayIntro) { Text("Revoir le coup") }
+                            }
+                            TextButton(onClick = viewModel::revealSolution) { Text("Solution") }
+                        }
+                    TrainerViewModel.Status.WRONG,
+                    TrainerViewModel.Status.SOLVED,
+                    -> ResultPanel(state, puzzle, viewModel, onOpenGame)
+                    else -> Unit
                 }
             }
         }

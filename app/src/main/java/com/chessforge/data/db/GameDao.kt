@@ -153,6 +153,11 @@ class GameDao(private val helper: ForgeDb) {
         }
     }
 
+    /** Un coup precis, pour rejouer le coup adverse qui amene une position de puzzle. */
+    fun move(gameId: String, ply: Int): MoveRecord? = helper.readableDatabase.firstOrNull(
+        "SELECT * FROM moves WHERE gameId = ? AND ply = ?", arrayOf(gameId, ply.toString())
+    ) { readMove(it) }
+
     fun moves(gameId: String): List<MoveRecord> = helper.readableDatabase.mapQuery(
         "SELECT * FROM moves WHERE gameId = ? ORDER BY ply", arrayOf(gameId)
     ) { readMove(it) }
